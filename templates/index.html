@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Model Interactive Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            font-size: 1.2em;
+        }
+
+        .sidebar {
+            width: 20%;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .model-btn {
+            background-color: #555;
+            color: #fff;
+            border: none;
+            padding: 20px;
+            margin: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border-radius: 5px;
+            font-size: 1.2em;
+            white-space: nowrap;
+            width: 80%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .model-btn span {
+            width: 100%;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .model-btn:hover {
+            background-color: #777;
+        }
+
+        .chat-window {
+            width: 80%;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: -2px 0 5px 0 rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            font-weight: 300;
+        }
+
+        .chat-history {
+            width: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+        .message {
+            background-color: #eee;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-self: flex-start;
+        }
+
+        .welcome-message .feedback-icons {
+            display: none;
+        }
+
+        .feedback-icons {
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+        }
+
+        .feedback-icons i {
+            cursor: pointer;
+            margin: 0 10px;
+            color: #007bff;
+        }
+
+        .chat-input {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .chat-input textarea {
+            width: 80%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1.2em;
+            resize: none;
+            overflow: auto;
+            min-height: 20px;
+            max-height: 100px;
+        }
+
+        .chat-input button {
+            padding: 15px 30px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
+
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <button class="model-btn" id="therapist"><span>May - Therapist</span></button>
+            <button class="model-btn" id="math-tutor"><span>Tom - Math Tutor</span></button>
+        </div>
+        <div class="chat-window">
+            <h1 class="title">Welcome to our Interactive Platform</h1>
+            <div class="chat-history">
+                <div class="message welcome-message">
+                    <p>Welcome to our chat. Click a model button to get started!</p>
+                    <div class="feedback-icons">
+                        <i class="fas fa-thumbs-up"></i>
+                        <i class="fas fa-thumbs-down"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <textarea id="user-message" placeholder="Type your message here..."></textarea>
+                <button id="send-button"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        document.querySelectorAll('.model-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                var modelId = button.id;
+                $.post("/call_model", { model_id: modelId }, function() {
+                    // You can add any code here to handle the response
+                });
+            });
+        });
+
+        document.querySelector('#send-button').addEventListener('click', () => {
+            var userMessage = document.querySelector('#user-message').value;
+            document.querySelector('#user-message').value = '';
+            var messageHtml = `
+                <div class="message">
+                    <p>${userMessage}</p>
+                </div>
+            `;
+            document.querySelector('.chat-history').innerHTML += messageHtml;
+
+            $.post("/chat", { message: userMessage }, function(data) {
+                var botResponse = data.message;
+                var responseHtml = `
+                    <div class="message">
+                        <p>${botResponse}</p>
+                        <div class="feedback-icons">
+                            <i class="fas fa-thumbs-up"></i>
+                            <i class="fas fa-thumbs-down"></i>
+                        </div>
+                    </div>
+                `;
+                document.querySelector('.chat-history').innerHTML += responseHtml;
+            });
+        });
+    </script>
+</body>
+</html>
